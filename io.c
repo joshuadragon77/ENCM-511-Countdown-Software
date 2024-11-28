@@ -1,3 +1,13 @@
+/**
+ * @file io.c
+ * @author TheJades (thejadesisfat77@gmail.com)
+ * @brief IO Driver Component for the PIC24F16KA101. Handles PWM, IO Operations of LEDs and Buttons.
+ * @version 0.1
+ * @date 2024-11-28
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "io.h"
 
 uint8_t pwmLEDEnabled = 0;

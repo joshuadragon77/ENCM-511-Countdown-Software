@@ -1,3 +1,13 @@
+/**
+ * @file adc.c
+ * @author TheJades (thejadesisfat77@gmail.com)
+ * @brief Simple ADC Driver for PIC24F16KA101. Redesigned from the previous iteration to remove unneccessary code and to make it more clean.
+ * @version 0.1
+ * @date 2024-11-28
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "adc.h"
 
 uint16_t currentADCValue = 0;

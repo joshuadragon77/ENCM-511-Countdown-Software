@@ -1,3 +1,13 @@
+/**
+ * @file uart.c
+ * @author TheJades (thejadesisfat77@gmail.com)
+ * @brief UART Driver for the PIC24F16KA101. Features a mostly interrupted architecture and basic terminal-like features.
+ * @version 0.1
+ * @date 2024-11-28
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "uart.h"
 
 // Buffer increased to 512 from 256 due to insufficient space for long strings being transmitted.

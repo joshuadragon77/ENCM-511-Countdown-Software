@@ -1,6 +1,6 @@
 /*
  * File:   main.c
- * Author: Joshua Ounalom, Arush Sanghal, AbdulRahman AbdulJabar
+ * Author: Arush Sanghal, AbdulRahman AbdulJabar, Joshua Ounalom
  *
  * Created on: USE THE INFORMATION FROM THE HEADER MPLAB X IDE GENERATES FOR YOU
  */

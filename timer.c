@@ -1,3 +1,13 @@
+/**
+ * @file timer.c
+ * @author TheJades (thejadesisfat77@gmail.com)
+ * @brief Utilizies Timer 2 and Timer 3 to perform "mostly accurate" countdown and to add delay blocks.
+ * @version 0.1
+ * @date 2024-11-28
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 #include "timer.h"
 
 /**
@@ -42,9 +52,6 @@ void resetTimer(){
 
 }
 
-/**
- * Interrupts for checking when a button has changed state.
- */
 void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void){
     IFS0bits.T2IF = 0;
 
