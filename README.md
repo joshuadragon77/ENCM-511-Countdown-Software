@@ -1,4 +1,4 @@
-#ENCM 511 Project by Group 21
+# ENCM 511 Project by Group 21
 
 ## Features
  - Does your timer crap for you utilizing a PIC24F16KA101 microcontroller and some on board hardware.
