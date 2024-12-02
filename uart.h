@@ -13,6 +13,9 @@ typedef enum _InputMode {
     CustomInput
 } InputMode;
 
+
+void clearUserUARTBuffer();
+
 /**
  * Set the Input Mode for the UART Driver.
  * 

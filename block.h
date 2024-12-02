@@ -23,6 +23,9 @@ extern BlockFlags currentBlockFlags;
 #define BLOCKFLAG_TimerCountdownFinish 32
 #define BLOCKFLAG_TimerDelayFinish 64
 
+uint8_t getORFlagState(BlockFlags blockFlags);
+uint8_t getANDFlagState(BlockFlags BlockFlags);
+
 /**
  * @brief Function that clears the selected block flags.
  * 

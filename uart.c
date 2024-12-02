@@ -31,6 +31,10 @@ void setInputMode(InputMode inputMode){
     currentInputMode = inputMode;
 }
 
+InputMode getInputMode(){
+    return currentInputMode;
+}
+
 void writeCharacter(char character){
     cpuUARTBuffer[writePointer ++] = character;
     writePointer &= 511;
@@ -65,6 +69,11 @@ uint16_t power10(uint16_t power){
             return 100000;
         }
     }
+}
+
+void clearUserUARTBuffer(){
+    userReadPointer = 0;
+    userWritePointer = 0;
 }
 
 void writeUnsignedNumber(uint16_t number){

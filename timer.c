@@ -80,7 +80,6 @@ void writeTimeToUARTConsole(){
     writeCharacter(':');
     writeCharacter(seconds / 10 + 48);
     writeCharacter(seconds % 10 + 48);
-    writeCharacter('\n');
 }
 
 void setBlockingDelay(uint16_t msDelay){

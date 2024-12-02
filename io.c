@@ -17,6 +17,8 @@ uint16_t maximumHardwareCycle = 3333;
 uint16_t onHardwareDutyCycle = 25;
 uint16_t offHardwareDutyCycle = 25;
 
+uint8_t animationState = 1;
+
 float currentDutyCycle = 0;
 
 uint8_t animationInterval = 0;
@@ -93,11 +95,25 @@ float getDutyCycle(){
 }
 
 void animationWaveyTick(){
-    float timeFactor = animationInterval / 255.f;
+    if (animationState){
+        float timeFactor = animationInterval / 255.f;
 
-    float animationFactor = (cosf(2 * M_PI * timeFactor) + 1) / 2;
+        float animationFactor = (cosf(2 * M_PI * timeFactor) + 1) / 2;
 
-    setDutyCycle(animationFactor);
+        setDutyCycle(animationFactor);
+    }
+}
+
+void enableAnimation(){
+    animationState = 1;
+}
+
+void disableAnimation(){
+    animationState = 0;
+}
+
+void buttonBufferClear(){
+    buttonState = 0;
 }
 
 uint8_t isButtonPress(Button button){

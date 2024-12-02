@@ -51,14 +51,13 @@
 
 #include <xc.h>
 
-#include <stdio.h>
-
 #include "adc.h"
 #include "block.h"
 #include "clkchange.h"
 #include "io.h"
 #include "timer.h"
 #include "uart.h"
+#include "stdlib.h"
 
 uint8_t operatingModeK = 0;
 uint8_t operatingModeB = 0;
@@ -66,6 +65,7 @@ uint16_t buttonTriggered;
 uint16_t time = 0;
 uint8_t isPrinted = 0;
 uint8_t ifT3Interrupt = 0;
+uint8_t pause = 0;
 
 #define BUTTON1_PRESS !(PORTA & 0b100)
 #define BUTTON2_PRESS !(PORTB & 0b10000)
@@ -83,23 +83,42 @@ void setup(){
 
 void IOcheck(){
 
-    if (isButtonPress(Button1)){
+    if (isButtonPress(Button1) && operatingModeB != 3){
         operatingModeB = 1;
     }
-    if (isButtonPress(Button2)){
+    if (isButtonPress(Button2) && operatingModeB != 3){
         operatingModeB = 2;
     }
     if (isButtonPress(Button3)){
-        if(operatingModeB == 3){
-            operatingModeB = 4;
+        if (operatingModeB == 3){
+            setBlockingDelay(2000);
+            while (1){
+                clearFlags(BLOCKFLAG_TimerDelayFinish | BLOCKFLAG_ButtonPress);
+                orBlock(BLOCKFLAG_TimerDelayFinish | BLOCKFLAG_ButtonPress);
 
-        }
-        if(operatingModeB == 4){
+                if (getORFlagState(BLOCKFLAG_TimerDelayFinish)){
+                    writeString("Timer is reset and timer was exited\n");
+                    time = 0;
+                    setTimer(0);
+                    resetTimer();
+                    operatingModeB = 0;
+                    break;
+                }else if(isButtonPress(Button3) == 0){
+                    setBlockingDelay(200);
+                    if(pause == 0){
+                        pause = 1;
+
+                    }
+                    else if(pause == 1){
+                        pause = 2;
+
+                    }
+                    break;
+                }
+            }
+        }else{
             operatingModeB = 3;
 
-        }
-        else{
-            operatingModeB = 3;
         }
     }
  }
@@ -121,8 +140,8 @@ void IOcheck(){
 int main(void) {
     setup();
 
-    setTimer(120);
-    startTimer();
+    // setTimer(120);
+    // startTimer();
 
     // setDutyCycle(1);
     enablePWMLed();
@@ -136,7 +155,11 @@ int main(void) {
 
     #ifdef TESTING
     while (1){
-        // setBlockingDelay(250);
+        setBlockingDelay(250);
+
+        orBlock(BLOCKFLAG_TimerDelayFinish);
+
+
 
         orBlock(BLOCKFLAG_UARTReceive);
         writeUnsignedNumber(getUserCharacter());
@@ -166,45 +189,93 @@ int main(void) {
 
     
     while (1){
-    if (operatingModeB == 0){
+        if (operatingModeB == 0){
             writeString("Press one of the push buttons to start\n\r");
             writeString("PB1 allows you to set the time you want in mm:ss\n\r");
             writeString("PB2 allows you to reset the timer to 0:00\n\r");
             writeString("PB3 counts down the timer with the led blinking along\n\r");
 
-            orBlock(BLOCKFLAG_ButtonPress);
+            while (operatingModeB == 0){
+                clearFlags(BLOCKFLAG_ButtonPress);
+                buttonBufferClear();
+                orBlock(BLOCKFLAG_ButtonPress);
+                IOcheck();
+            }
         }
         
         if (operatingModeB == 1){
+            clearUserUARTBuffer();
             writeString("Please enter the time you want in mm:ss format by typing in each number and pressing enter after\n\r");
             char feedbackArray[6];
 
-            if(getUserFeedback(feedbackArray, 6)!= -1){
-                char val0 = 0;
-                char val1 = 0;
-                char val2 = 0;
-                char val3 = 0;
-                
-                while(val0 == 0){
-                    val0 = getUserCharacter();
-                }
-                while(val1 == 0){
-                    val1 = getUserCharacter();
-                }
-                while(val2 == 0){
-                    val2 = getUserCharacter();
-                }
-                while(val3 == 0){
-                    val3 = getUserCharacter();
-                }
-                char finalVal[6] = {val0, val1, ':', val2, val3, 0};
-                
-                writeString(finalVal);
-                writeString("\n\r");
-            
-            
-                time = ((val0 - 48)*10 + (val1-48))*60 + (val2-48)*10 + (val3-48);
+            char val0 = 0;
+            char val1 = 0;
+            char val2 = 0;
+            char val3 = 0;
+
+            clearFlags(BLOCKFLAG_UARTReceive);
+            orBlock(BLOCKFLAG_UARTReceive);
+            clearFlags(BLOCKFLAG_UARTReceive);
+            val0 = getUserCharacter();
+            if (val0 < 48 || val0 > 57){
+                writeString("Invalid Character, please input a number instead\n");
+                operatingModeB = 0;
+                continue;
             }
+            
+            orBlock(BLOCKFLAG_UARTReceive);
+            clearFlags(BLOCKFLAG_UARTReceive);
+            val1 = getUserCharacter();
+            if (val1 < 48 || val1 > 57){
+                writeString("Invalid Character, please input a number instead\n");
+                operatingModeB = 0;
+                continue;
+            }
+
+            orBlock(BLOCKFLAG_UARTReceive);
+            clearFlags(BLOCKFLAG_UARTReceive);
+            val2 = getUserCharacter();
+            if (val2 < 48 || val2 > 55){
+                writeString("Invalid Character, please input a number instead\n");
+                operatingModeB = 0;
+                continue;
+            }
+
+            orBlock(BLOCKFLAG_UARTReceive);
+            clearFlags(BLOCKFLAG_UARTReceive);
+            val3 = getUserCharacter();
+            if(val2=='6' && val3!='0'){
+                    writeString("Seconds cannot be greater than 60 seconds\n");
+                    operatingModeB = 0;
+                    continue;
+                }
+            if (val3 < '0' || val3 > '9'){
+                
+                writeString("Invalid Character, please input a number instead\n");
+                operatingModeB = 0;
+                continue;
+            }
+            
+
+            // while(val0 == 0){
+            //     val0 = getUserCharacter();
+            // }
+            // while(val1 == 0){
+            //     val1 = getUserCharacter();
+            // }
+            // while(val2 == 0){
+            //     val2 = getUserCharacter();
+            // }
+            // while(val3 == 0){
+            //     val3 = getUserCharacter();
+            // }
+            char finalVal[6] = {val0, val1, ':', val2, val3, 0};
+            
+            writeString(finalVal);
+            writeString("\n\r");
+        
+        
+            time = ((val0 - 48)*10 + (val1-48))*60 + (val2-48)*10 + (val3-48);
             
             setTimer(time);
             resetTimer();
@@ -216,125 +287,112 @@ int main(void) {
         if (operatingModeB == 2){
             writeString("Timer Resetting back to 0:00\n\r");
             time = 0;
+            setTimer(time);
+            resetTimer();
             operatingModeB = 0;
+            
         }
         
         if (operatingModeB == 3){
+            clearUserUARTBuffer();
             //uint16_t originalTime = time;
+            resetTimer();
             startTimer();
-            T3CONbits.TCKPS = 2;
             TRISBbits.TRISB8 = 0;
             LATBbits.LATB8 = 0;
 
-
-            PR3 = 3904; 
-            TMR3 = 0;
-            T3CONbits.TON = 1;
             uint16_t prevTime = getCurrentTimeSeconds()+1;
-            disablePWMLed();
+            uint8_t ledEnabled = 0;
+            uint8_t input;
+            setBlockingDelay(1000);
+            disableAnimation();
             while(operatingModeB == 3){
+                clearFlags(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerDelayFinish | BLOCKFLAG_ADCRead);
+                orBlock(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerDelayFinish | BLOCKFLAG_ADCRead);
+                setDutyCycle(getPercentageReading());
+                IOcheck();
 
-
-                while(ifT3Interrupt){
+                while(pause == 1){
+                    stopTimer();
                     Idle();
-                }
-                ifT3Interrupt = 0;
+                    IOcheck();
 
-                if(operatingModeK == 0){
-                    if(prevTime != getCurrentTimeSeconds()){
-                        writeTimeToUARTConsole();
-                        prevTime = getCurrentTimeSeconds();
-                        toggleLED();
-                        //isPrinted = 1;
-                    }
-                    
                 }
-                if(operatingModeK==1){
-                    // if(LED_OFF && isPrinted == 0){
-                        writeTimeToUARTConsole();
-                        //isPrinted = 1;
-                    //}
-                }
-                // if(LED_ON){
-                //     isPrinted = 0;
-                // }
-
-                if(getCurrentTimeSeconds() == 0){
-                    setTimer(5);
-                    enablePWMLed();
+                if (pause ==2){
                     startTimer();
-                    setTimer(time);
-                    resetTimer();
-                    operatingModeB = 0;
+                    pause = 0;
                 }
 
+
+                if (getORFlagState(BLOCKFLAG_TimerDelayFinish)){
+                    setBlockingDelay(1000);
+                    ledEnabled = !ledEnabled;
+
+                    if (ledEnabled){
+                        enablePWMLed();
+                    }else{
+                        disablePWMLed();
+                        turnOFFLed();
+                    }
+                }
+                if (getORFlagState(BLOCKFLAG_UARTReceive)){
+
+                    input = getUserCharacter();
+
+                    if (input == 'i' && operatingModeK == 0){
+                        input = 0;
+                        operatingModeK = 1;
+                    }
+
+                    if (input == 'i' && operatingModeK == 1){
+                        input = 0;
+                        operatingModeK = 0;
+                    }
+                }
+                if (getORFlagState(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerDelayFinish)){
+                    if(operatingModeK == 0){
+                        writeTimeToUARTConsole();
+                        writeCharacter('\n');
+                        //isPrinted = 1;
+                        
+                    }
+                    if(operatingModeK==1){
+                        writeTimeToUARTConsole();
+                        writeCharacter(' ');
+                        prevTime = getCurrentTimeSeconds();
+                        writeUnsignedNumber(getADCReading());
+                        writeCharacter(' ');
+                        uint16_t val = (int)(getDutyCycle()*100);
+                        
+                        writeUnsignedNumber(val);
+                        writeString("%\n");
+                    }
+
+                    // if(LED_ON){
+                    //     isPrinted = 0;
+                    // }
+
+                    if(getCurrentTimeSeconds() == 0){
+                        setTimer(5);
+                        enablePWMLed();
+                        startTimer();
+                        while (getCurrentTimeSeconds() != 0){
+                            orBlock(BLOCKFLAG_ADCRead);
+                            clearFlags(BLOCKFLAG_ADCRead);
+                            setDutyCycle(getPercentageReading());
+                        }
+                        setTimer(time);
+                        operatingModeB = 0;
+                        enableAnimation();
+                    }
+                }
             }
         }
 
-        if(operatingModeB == 4){
-            stopTimer();
-            Idle();
-        }
-        
-        
-        
-        // Read current UART reading.
-        char inputCharacter = getUserCharacter();
-        
-        if (inputCharacter == 'i'){
-            if(operatingModeK == 0){
-                operatingModeK = 1;
-            }
-            if(operatingModeK == 1){
-                operatingModeK = 0;
-            }
-        }
-        
-    
-        IOcheck();
-        writeUnsignedNumber(getADCReading());
-        writeCharacter('\n');
 
-        
-
-
-        // blockUntilUserFeedback();
-
-        // char a[10];
-        // for (int i = 0;i<10;i++){fffffff
-        //     a[i] = 0;
-        // }
-        // getUserFeedback(a, 10);
-
-        // if (strcmp(a, "reset") == 0){
-        //     resetTimer();
-        // } 
-        // if (strcmp(a, "stop") == 0){
-        //     stopTimer();
-        // } 
-        // if (strcmp(a, "start") == 0){
-        //     startTimer();
-        // } 
-        // writeTimeToUARTConsole();
-        
-
-        // for (int i = 0;i<5;i++){
-            getUserCharacter();
-            animationWaveyTick();
-        // };
-        
-        
-    }
-
-    // while (1){
-    //     animationWaveyTick();
-    //     // staticLEDOff();
-    // }
-
-    return 0;
     #endif
-
-
+    }
+    return 0;
 }
 
 

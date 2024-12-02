@@ -15,6 +15,10 @@ typedef enum _Button{
     Button3
 } Button;
 
+void buttonBufferClear();
+void enableAnimation();
+void disableAnimation();
+
 /**
  * @brief Setup IO Peripherals and timers for the PWM component.
  * 

@@ -16,20 +16,28 @@ void clearFlags(BlockFlags blockFlags){
     currentBlockFlags &= !blockFlags;
 }
 
+uint8_t getORFlagState(BlockFlags blockFlags){
+    return blockFlags & currentBlockFlags;
+}
+
+uint8_t getANDFlagState(BlockFlags blockFlags){
+    return (blockFlags & currentBlockFlags) == blockFlags;
+}
+
 void orBlock(BlockFlags blockFlags){
     while (!(blockFlags & currentBlockFlags)){
-        getUserCharacter();
+        if (getInputMode() == FeedbackOnInput)
+            getUserCharacter();
         animationWaveyTick();
         Idle();
     }
-    currentBlockFlags &= !blockFlags;
 }
 
 void andBlock(BlockFlags blockFlags){
     while ((blockFlags & currentBlockFlags) != blockFlags){
-        getUserCharacter();
+        if (getInputMode() == FeedbackOnInput)
+            getUserCharacter();
         animationWaveyTick();
         Idle();
     }
-    currentBlockFlags &= !blockFlags;
 }
