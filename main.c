@@ -145,12 +145,6 @@ int main(void) {
 
     // setDutyCycle(1);
     enablePWMLed();
-
-    writeString("SAhit!\n");
-    writeString("Fuck!\n");
-    writeString("Bitch!\n");
-    writeString("Idiot!\n");
-
     setInputMode(CustomInput);
 
     #ifdef TESTING
