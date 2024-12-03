@@ -118,7 +118,7 @@ char getUserCharacter(){
                 strncpy(submittedFeedbackBuffer, feedbackBuffer, currentFeedbackLength);
                 feedbackReady = 1;
                 currentFeedbackLength = 0;
-                SET_BLOCKING_FLAG(BLOCKFLAG_UARTFeedbackReceive);
+                SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_UARTFeedbackReceive);
             }
         }
 
@@ -159,7 +159,7 @@ void __attribute__((interrupt, no_auto_psv)) _U2RXInterrupt(void){
     IFS1bits.U2RXIF = 0;
     userUARTBuffer[userWritePointer ++] = U2RXREG;
 
-    SET_BLOCKING_FLAG(BLOCKFLAG_UARTReceive);
+    SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_UARTReceive);
 }
 
 void __attribute__((interrupt, no_auto_psv)) _U2TXInterrupt(void){
@@ -168,7 +168,7 @@ void __attribute__((interrupt, no_auto_psv)) _U2TXInterrupt(void){
         U2TXREG = cpuUARTBuffer[readPointer ++];
         readPointer &= 511;
     }else{
-        SET_BLOCKING_FLAG(BLOCKFLAG_UARTTransmitComplete);
+        SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_UARTTransmitComplete);
     }
 }
 

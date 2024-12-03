@@ -63,15 +63,17 @@ void __attribute__((interrupt, no_auto_psv)) _T2Interrupt(void){
                 minutes --;
         }
         seconds --;
+        SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_TimerCountdownInterval);
     }else{
-        SET_BLOCKING_FLAG(BLOCKFLAG_TimerCountdownFinish);
+        SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_TimerCountdownFinish);
         T2CONbits.TON = 0;
     }
 }
 
 void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
     IFS0bits.T3IF = 0;
-    SET_BLOCKING_FLAG(BLOCKFLAG_TimerDelayFinish);
+    T3CONbits.TON = 0;
+    SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_TimerDelayFinish);
 }
 
 void writeTimeToUARTConsole(){
@@ -86,6 +88,10 @@ void setBlockingDelay(uint16_t msDelay){
     TMR3 = 0;
     PR3 = (uint32_t)msDelay * 125 / 128;
     T3CONbits.TON = 1;
+}
+
+void disableBlockingDelay(){
+    T3CONbits.TON = 0;
 }
 
 uint16_t getCurrentTimeSeconds(){

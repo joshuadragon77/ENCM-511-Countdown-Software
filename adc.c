@@ -15,7 +15,7 @@ uint16_t currentADCValue = 0;
 void __attribute__((interrupt, no_auto_psv))  _ADC1Interrupt(void){
     IFS0bits.AD1IF = 0;
     currentADCValue = ADC1BUF0;
-    SET_BLOCKING_FLAG(BLOCKFLAG_ADCRead);
+    SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_ADCRead);
 }
 
 uint16_t getADCReading(){

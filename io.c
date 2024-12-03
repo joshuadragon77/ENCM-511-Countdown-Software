@@ -45,7 +45,7 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void){
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
     IFS1bits.CNIF = 0;
     buttonState |= (!(PORTA & 0b10000) << 2) | (!(PORTB & 0b10000) << 1) | !(PORTA & 0b100);
-    SET_BLOCKING_FLAG(BLOCKFLAG_ButtonPress);
+    SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_ButtonPress);
 }
 
 void enablePWMLed(){

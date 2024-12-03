@@ -57,4 +57,6 @@ void resetTimer();
  * @param msDelay 
  */
 void setBlockingDelay(uint16_t msDelay);
+
+void disableBlockingDelay();
 #endif
