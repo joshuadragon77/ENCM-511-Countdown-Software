@@ -15,8 +15,22 @@ typedef enum _Button{
     Button3
 } Button;
 
+/**
+ * @brief Clear the button queue.
+ * 
+ */
 void buttonBufferClear();
+
+/**
+ * @brief Enable the Pulsating Animation whenever PWM is enabled and animationWaveyTick is called.
+ * 
+ */
 void enableAnimation();
+
+/**
+ * @brief Disable the Pulsating Animation.
+ * 
+ */
 void disableAnimation();
 
 /**

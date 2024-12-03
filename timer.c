@@ -11,7 +11,7 @@
 #include "timer.h"
 
 /**
- * @bug There is some time deviation. After 2 minutes, there is a 1 second deviation in which the PIC24 counts faster than the top of the line shitty iPhone.
+ * @bug There is some time d eviation. After 2 minutes, there is a 1 second deviation in which the PIC24 counts faster than the top of the line shitty iPhone.
  * 
  */
 // 1 seconds × (500000Hz / 2 / 8)
@@ -19,6 +19,8 @@
 uint16_t currentTimerDuration = 0;
 uint16_t setTimerDuration = 0;
 
+
+// Not sure why I kept this here. Might have a performance impact on interrupts for no reason... gave up and left it here anyways lol.
 uint8_t minutes = 0;
 uint8_t seconds = 0;
 

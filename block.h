@@ -37,7 +37,20 @@ mustUpdateFlags = 1
 #define BLOCKFLAG_ARRAY_TimerDelayFinish 6
 #define BLOCKFLAG_ARRAY_TimerCountdownInterval 7
 
+/**
+ * @brief Return whether the flags within the OR operations are set.
+ * 
+ * @param blockFlags 
+ * @return uint8_t 
+ */
 uint8_t getORFlagState(BlockFlags blockFlags);
+
+/**
+ * @brief Return whether the flags within the AND operations are set.
+ * 
+ * @param blockFlags 
+ * @return uint8_t 
+ */
 uint8_t getANDFlagState(BlockFlags BlockFlags);
 
 /**

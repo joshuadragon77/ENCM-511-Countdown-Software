@@ -58,5 +58,9 @@ void resetTimer();
  */
 void setBlockingDelay(uint16_t msDelay);
 
+/**
+ * @brief Disable any currently running delays and prevent them from causing a block
+ * 
+ */
 void disableBlockingDelay();
 #endif

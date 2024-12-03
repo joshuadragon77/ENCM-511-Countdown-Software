@@ -67,12 +67,6 @@ uint8_t isPrinted = 0;
 uint8_t ifT3Interrupt = 0;
 uint8_t pause = 0;
 
-#define BUTTON1_PRESS !(PORTA & 0b100)
-#define BUTTON2_PRESS !(PORTB & 0b10000)
-#define BUTTON3_PRESS !(PORTA & 0b10000) 
-#define LED_OFF !(PORTB & 0b000000000)
-#define LED_ON !(PORTB & 0b100000000)
-
 void setup(){
     newClk(500);
     initTimer();
@@ -82,7 +76,7 @@ void setup(){
 }
 
 void IOcheck(){
-
+    // Check to see if an input state is occured and react to those states. Change states as well.
     if (isButtonPress(Button1) && operatingModeB != 3){
         operatingModeB = 1;
     }
@@ -109,68 +103,17 @@ void IOcheck(){
         if (isButtonPress(Button3)){
             operatingModeB = 3;
         }
- }
+}
 
-// void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
-//     IFS1bits.CNIF = 0;
-//     buttonTriggered = 1;
-    
-//  }
-
-// void __attribute__((interrupt, no_auto_psv)) _T3Interrupt(void){
-//     IFS0bits.T3IF = 0;
-//     ifT3Interrupt = 1;
-
-// }
-
-#define TESTINGA
 
 int main(void) {
     setup();
 
-    // setTimer(120);
-    // startTimer();
-
-    // setDutyCycle(1);
     enablePWMLed();
     setInputMode(CustomInput);
 
-    #ifdef TESTING
     while (1){
-        setBlockingDelay(250);
-
-        orBlock(BLOCKFLAG_TimerDelayFinish);
-
-
-
-        orBlock(BLOCKFLAG_UARTReceive);
-        writeUnsignedNumber(getUserCharacter());
-        writeCharacter('\n');
-        // setDutyCycle(getPercentageReading());
-        // orBlock(BLOCKFLAG_ADCRead);
-        // writeUnsignedNumber(getADCReading());
-
-        // writeCharacter('\n');
-        // orBlock(BLOCKFLAG_UARTFeedbackReceive);
-        // char feedback[25];
-
-        // getUserFeedback(feedback, 25);
-
-        // writeString(feedback);
-        // writeCharacter('\n');
-        // andBlock(BLOCKFLAG_UARTTransmitComplete | BLOCKFLAG_ButtonPress);
-        // toggleLED();
-    }
-    #else
-
-
-    // setTimer(1);
-
-    // (500 kHz / 2) / (4 × 19200 / s) − 1
-
-
-    
-    while (1){
+        // Main Menu
         if (operatingModeB == 0){
             writeString("Press one of the push buttons to start\n\r");
             writeString("PB1 allows you to set the time you want in mm:ss\n\r");
@@ -185,6 +128,7 @@ int main(void) {
             }
         }
         
+        // Timer Character Input
         if (operatingModeB == 1){
             clearUserUARTBuffer();
             writeString("Please enter the time you want in mmss format by typing in each number\n");
@@ -195,6 +139,7 @@ int main(void) {
             char val2 = 0;
             char val3 = 0;
 
+            // First Digit MSB
             clearFlags(BLOCKFLAG_UARTReceive);
             orBlock(BLOCKFLAG_UARTReceive);
             clearFlags(BLOCKFLAG_UARTReceive);
@@ -207,6 +152,7 @@ int main(void) {
 
             writeCharacter(val0);
             
+            // Second Digit
             orBlock(BLOCKFLAG_UARTReceive);
             clearFlags(BLOCKFLAG_UARTReceive);
             val1 = getUserCharacter();
@@ -219,6 +165,7 @@ int main(void) {
             writeCharacter(val1);
             writeCharacter(':');
 
+            // Third Digit
             orBlock(BLOCKFLAG_UARTReceive);
             clearFlags(BLOCKFLAG_UARTReceive);
             val2 = getUserCharacter();
@@ -230,6 +177,8 @@ int main(void) {
 
             writeCharacter(val2);
 
+
+            // Fourth Digit
             orBlock(BLOCKFLAG_UARTReceive);
             clearFlags(BLOCKFLAG_UARTReceive);
             val3 = getUserCharacter();
@@ -246,24 +195,10 @@ int main(void) {
             }
             
             writeCharacter(val3);
-
-            // while(val0 == 0){
-            //     val0 = getUserCharacter();
-            // }
-            // while(val1 == 0){
-            //     val1 = getUserCharacter();
-            // }
-            // while(val2 == 0){
-            //     val2 = getUserCharacter();
-            // }
-            // while(val3 == 0){
-            //     val3 = getUserCharacter();
-            // }
-            char finalVal[6] = {val0, val1, ':', val2, val3, 0};
             
-            // writeString(finalVal);
             writeString("\n\r\n\r");
-        
+
+            // Set timer...
         
             time = ((val0 - 48)*10 + (val1-48))*60 + (val2-48)*10 + (val3-48);
             
@@ -274,6 +209,7 @@ int main(void) {
             
         }
         
+        // Reset Timer
         if (operatingModeB == 2){
             writeString("Timer Resetting back to 0:00\n");
             time = 0;
@@ -283,6 +219,7 @@ int main(void) {
             
         }
         
+        // Start Timer
         if (operatingModeB == 3){
             if (time == 0){
                 writeString("Cannot start timer with empty time.\n");
@@ -291,7 +228,7 @@ int main(void) {
             }
             writeString("Timer's Started\n");
             clearUserUARTBuffer();
-            //uint16_t originalTime = time;
+
             resetTimer();
             buttonBufferClear();
             startTimer();
@@ -301,12 +238,14 @@ int main(void) {
             pause = 0;
             uint8_t ledEnabled = 0;
             uint8_t input;
-            // setBlockingDelay(1000);
+            
             disableAnimation();
             while(operatingModeB == 3){
 
+                // Check to see if a UART or Interval occurs, then show the text and toggle LED accordingly.
                 if (getORFlagState(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerCountdownInterval)){
 
+                    // Toggle LED.
                     if (getORFlagState(BLOCKFLAG_TimerCountdownInterval)){
                         // setBlockingDelay(1000);
                         ledEnabled = !ledEnabled;
@@ -318,8 +257,8 @@ int main(void) {
                             turnOFFLed();
                         }
                     }
-                    clearFlags(BLOCKFLAG_TimerCountdownInterval);
 
+                    // Menu I control.
                     if (getORFlagState(BLOCKFLAG_UARTReceive)){
 
                         input = getUserCharacter();
@@ -335,14 +274,18 @@ int main(void) {
                         }
                     }
 
+                    clearFlags(BLOCKFLAG_TimerCountdownInterval);
                     clearFlags(BLOCKFLAG_UARTReceive);
 
+                    // Print only time
                     if(operatingModeK == 0){
                         writeTimeToUARTConsole();
                         writeCharacter('\n');
                         //isPrinted = 1;
                         
                     }
+
+                    //Print more information such as ADC reading and duty cycle.
                     if(operatingModeK==1){
                         writeTimeToUARTConsole();
                         writeCharacter(' ');
@@ -354,10 +297,8 @@ int main(void) {
                         writeString("%\n");
                     }
 
-                    // if(LED_ON){
-                    //     isPrinted = 0;
-                    // }
 
+                    // Logic for finishing the Timer.
                     if(getCurrentTimeSeconds() == 0){
                         writeString("Timer's Finished\n");
                         setTimer(5);
@@ -374,12 +315,15 @@ int main(void) {
                     }
                 }
 
+
+                // Logic for stopping the timer due to Button 3.
                 if (getORFlagState(BLOCKFLAG_TimerDelayFinish) && isButtonHeldDown(Button3)){
                     writeString("Timer's Stopped!\n");
                     operatingModeB = 0;
                     break;
                 }
 
+                // If an interrupt for a button state change occur. Check what Button 3 states are.
                 if (getORFlagState(BLOCKFLAG_ButtonPress)){
                     IOcheck();
                     clearFlags(BLOCKFLAG_ButtonPress);
@@ -388,9 +332,6 @@ int main(void) {
                 orBlock(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerCountdownInterval | BLOCKFLAG_TimerDelayFinish | BLOCKFLAG_ADCRead | BLOCKFLAG_ButtonPress);
             }
         }
-
-
-    #endif
     }
     return 0;
 }

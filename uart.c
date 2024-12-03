@@ -2,6 +2,9 @@
  * @file uart.c
  * @author TheJades (thejadesisfat77@gmail.com)
  * @brief UART Driver for the PIC24F16KA101. Features a mostly interrupted architecture and basic terminal-like features.
+ * 
+ * Features a buffer design as well to avoid text being corrupted if the CPU is very busy.
+ * 
  * @version 0.1
  * @date 2024-11-28
  * 
@@ -48,6 +51,7 @@ void writeCharacter(char character){
     }
 }
 
+// To reduce CPU impact and utilize memory for a fast lookup table.
 uint16_t power10(uint16_t power){
     switch(power){
         case 0:{
@@ -104,6 +108,8 @@ char getUserCharacter(){
     if (userReadPointer != currentWritePointer){
         char userCharacter = userUARTBuffer[userReadPointer ++];
 
+        // Process user character input to create a "terminal" like feedback.
+
         if (currentInputMode == FeedbackOnInput){
             if (userCharacter >= 32 && userCharacter <= 126 && currentFeedbackLength < 255){
                 writeCharacter(userCharacter);
@@ -123,6 +129,7 @@ char getUserCharacter(){
         }
 
         if (userCharacter == 3 || userCharacter == 4){
+            // CTRL + C or CTRL + D => reset.
             asm("RESET");
         }
 

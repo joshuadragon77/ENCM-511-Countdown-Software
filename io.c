@@ -32,6 +32,9 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void){
     animationInterval += 1;
 
     // optimized the fuck out of this one to reduce execution time.
+    // This utilizes a bistable interval that changes state each time an interrupt happens.
+    // This allows the creation of the software controlled PWM.
+    // However, due its frequent nature, precaution and immense efficiency must be performed to reduce impact on CPU.
     if (!pwmLEDEnabled)
         return;
 
@@ -99,6 +102,9 @@ float getDutyCycle(){
 void animationWaveyTick(){
     if (animationState){
         float timeFactor = animationInterval / 255.f;
+
+        // Uses the onboard animationInterval calculcated by Timer 1 operations.
+        // Shove that into a mathematical function to get some coolio animations.
 
         float animationFactor = (cosf(2 * M_PI * timeFactor) + 1) / 2;
 
