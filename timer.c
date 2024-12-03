@@ -91,6 +91,7 @@ void setBlockingDelay(uint16_t msDelay){
 }
 
 void disableBlockingDelay(){
+    TMR3 = 0;
     T3CONbits.TON = 0;
 }
 

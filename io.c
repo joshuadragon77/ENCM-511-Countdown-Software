@@ -23,6 +23,7 @@ float currentDutyCycle = 0;
 
 uint8_t animationInterval = 0;
 
+uint8_t buttonStateQueue = 0;
 uint8_t buttonState = 0;
 
 
@@ -44,7 +45,8 @@ void __attribute__((interrupt, no_auto_psv)) _T1Interrupt(void){
 
 void __attribute__((interrupt, no_auto_psv)) _CNInterrupt(void){
     IFS1bits.CNIF = 0;
-    buttonState |= (!(PORTA & 0b10000) << 2) | (!(PORTB & 0b10000) << 1) | !(PORTA & 0b100);
+    buttonState = (!(PORTA & 0b10000) << 2) | (!(PORTB & 0b10000) << 1) | !(PORTA & 0b100);
+    buttonStateQueue |= (!(PORTA & 0b10000) << 2) | (!(PORTB & 0b10000) << 1) | !(PORTA & 0b100);
     SET_BLOCKING_FLAG(BLOCKFLAG_ARRAY_ButtonPress);
 }
 
@@ -113,16 +115,22 @@ void disableAnimation(){
 }
 
 void buttonBufferClear(){
-    buttonState = 0;
+    buttonStateQueue = 0;
 }
 
 uint8_t isButtonPress(Button button){
-    uint8_t pressed = (1 << button) & buttonState;
+    uint8_t pressed = (1 << button) & buttonStateQueue;
     if (pressed){
-        buttonState &= !(1 << button);
+        buttonStateQueue &= !(1 << button);
     }
     return pressed;
 }
+
+uint8_t isButtonHeldDown(Button button){
+    uint8_t pressed = (1 << button) & buttonState;
+    return pressed;
+}
+
 
 void initIO(){
     AD1PCFG = 0xFFFF; /* keep this line as it sets I/O pins that can also be analog to be digital */

@@ -29,8 +29,8 @@ uint8_t getANDFlagState(BlockFlags blockFlags){
 }
 
 void generateCurrentBlockFlags(){
-    if (mustUpdateFlags == 0)
-        return;
+    // if (mustUpdateFlags == 0)
+    //     return;
 
     mustUpdateFlags = 0;
     
@@ -86,6 +86,19 @@ void orBlock(BlockFlags blockFlags){
         Idle();
         generateCurrentBlockFlags();
     }
+}
+
+void orBlockClear(BlockFlags blockFlags){
+    generateCurrentBlockFlags();
+    uint8_t acceptedFlags = 0;
+    while (!(acceptedFlags = blockFlags & currentBlockFlags)){
+        if (getInputMode() == FeedbackOnInput)
+            getUserCharacter();
+        animationWaveyTick();
+        Idle();
+        generateCurrentBlockFlags();
+    }
+    clearFlags(acceptedFlags);
 }
 
 void andBlock(BlockFlags blockFlags){

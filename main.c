@@ -304,43 +304,39 @@ int main(void) {
             // setBlockingDelay(1000);
             disableAnimation();
             while(operatingModeB == 3){
-                setDutyCycle(getPercentageReading());
-                if (getORFlagState(BLOCKFLAG_ButtonPress)){
-                    IOcheck();
-                }
 
-                if (getORFlagState(BLOCKFLAG_TimerDelayFinish)){
-                    writeString("Timer's Stopped!\n");
-                    operatingModeB = 0;
-                    break;
-                }
-
-                if (getORFlagState(BLOCKFLAG_TimerCountdownInterval)){
-                    // setBlockingDelay(1000);
-                    ledEnabled = !ledEnabled;
-
-                    if (ledEnabled){
-                        enablePWMLed();
-                    }else{
-                        disablePWMLed();
-                        turnOFFLed();
-                    }
-                }
-                if (getORFlagState(BLOCKFLAG_UARTReceive)){
-
-                    input = getUserCharacter();
-
-                    if (input == 'i' && operatingModeK == 0){
-                        input = 0;
-                        operatingModeK = 1;
-                    }
-
-                    if (input == 'i' && operatingModeK == 1){
-                        input = 0;
-                        operatingModeK = 0;
-                    }
-                }
                 if (getORFlagState(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerCountdownInterval)){
+
+                    if (getORFlagState(BLOCKFLAG_TimerCountdownInterval)){
+                        // setBlockingDelay(1000);
+                        ledEnabled = !ledEnabled;
+
+                        if (ledEnabled){
+                            enablePWMLed();
+                        }else{
+                            disablePWMLed();
+                            turnOFFLed();
+                        }
+                    }
+                    clearFlags(BLOCKFLAG_TimerCountdownInterval);
+
+                    if (getORFlagState(BLOCKFLAG_UARTReceive)){
+
+                        input = getUserCharacter();
+
+                        if (input == 'i' && operatingModeK == 0){
+                            input = 0;
+                            operatingModeK = 1;
+                        }
+
+                        if (input == 'i' && operatingModeK == 1){
+                            input = 0;
+                            operatingModeK = 0;
+                        }
+                    }
+
+                    clearFlags(BLOCKFLAG_UARTReceive);
+
                     if(operatingModeK == 0){
                         writeTimeToUARTConsole();
                         writeCharacter('\n');
@@ -377,8 +373,19 @@ int main(void) {
                         enableAnimation();
                     }
                 }
+
+                if (getORFlagState(BLOCKFLAG_TimerDelayFinish) && isButtonHeldDown(Button3)){
+                    writeString("Timer's Stopped!\n");
+                    operatingModeB = 0;
+                    break;
+                }
+
+                if (getORFlagState(BLOCKFLAG_ButtonPress)){
+                    IOcheck();
+                    clearFlags(BLOCKFLAG_ButtonPress);
+                }
+                setDutyCycle(getPercentageReading());
                 orBlock(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerCountdownInterval | BLOCKFLAG_TimerDelayFinish | BLOCKFLAG_ADCRead | BLOCKFLAG_ButtonPress);
-                clearFlags(BLOCKFLAG_UARTReceive | BLOCKFLAG_TimerCountdownInterval | BLOCKFLAG_TimerDelayFinish | BLOCKFLAG_ADCRead | BLOCKFLAG_ButtonPress);
             }
         }
 

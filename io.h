@@ -118,4 +118,6 @@ float getDutyCycle();
  */
 uint8_t isButtonPress(Button button);
 
+uint8_t isButtonHeldDown(Button button);
+
 #endif
